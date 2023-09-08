@@ -1,10 +1,11 @@
-"""This script parses the HTML of the Google Next website and saves the transcript of each
-presentation to a JSON file.
+"""
+This script parses the HTML of the Google Next website and saves the transcript of each
+presentation to a NDJSON file.
 """
 
 from bs4 import BeautifulSoup
 from youtube_transcript_api import YouTubeTranscriptApi
-import json
+import ndjson
 
 
 def parse_html(html):
@@ -56,7 +57,8 @@ def parse_html(html):
 
 
 def get_transcript(video_id):
-    """Return the transcript of a YouTube video.
+    """
+    Return the transcript of a YouTube video.
 
     :param video_id: YouTube video ID
     :return: transcript of the video
@@ -66,32 +68,66 @@ def get_transcript(video_id):
     return " ".join(combined_text.split())
 
 
-def run():
+def get_presentation_transcripts(presentations):
     """
-    Parse the HTML of the Google Next website and save the transcript of each presentation
-    to a JSON file.
+    Return a list of presentations with their transcript. Presentations without transcript are excluded.
 
-    The JSON file is saved in the transcripts/ directory.
+    :param presentations: list of presentations
+    :return: list of presentations with their transcript
     """
-    with open("google-next.html", "r") as f:
-        presentations = parse_html(f.read())
-
     # keep only presentations with youtube video, ignore the rest
-    presentation_with_youtubes = [p for p in presentations if p["video_id"] is not None]
+    filtered_presentations = [p for p in presentations if p["video_id"] is not None]
 
-    # add transcript to each presentation and save to JSON file
-    for p in presentation_with_youtubes:
+    # add transcript to each presentation
+    for p in filtered_presentations:
         print(p["title"])
-
         p["transcript"] = get_transcript(p["video_id"])
 
-        # convert title to safe filename
-        filename = p["title"].replace("/", "-")
-        json.dump(
-            p,
-            open(f"transcripts/{filename}.json", "w"),
-            indent=4,
-        )
+    return filtered_presentations
+
+
+def sanitize_text(text):
+    """
+    Sanitize text by replacing non-latin1 characters with latin1 characters.
+
+    :param text: text to sanitize
+    :return: sanitized text
+    """
+    unsafe_chars = {
+        "’": "'",
+        "•": "-",
+        "–": "-",
+        "—": "-",
+        "®": "",
+        "á": "a",
+        "™": "",
+        "ö": "o",
+        "ō": "o",
+        "ó": "o",
+        "‘": "'",
+        "​": "",
+    }
+
+    # loop through unsafe_chars, replace key with value
+    for key, value in unsafe_chars.items():
+        text = text.replace(key, value)
+
+    # assert text doesn't have non-latin1 characters
+    assert all(ord(c) < 128 for c in text)
+
+    return text
+
+
+def run():
+    """
+    Runner.
+    """
+    with open("google-next.html", "r") as f:
+        presentations = parse_html(sanitize_text(f.read()))
+
+    presentation_transcripts = get_presentation_transcripts(presentations)
+
+    ndjson.dump(presentation_transcripts, open("transcripts.ndjson", "w"))
 
 
 if __name__ == "__main__":
