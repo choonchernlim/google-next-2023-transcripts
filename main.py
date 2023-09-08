@@ -51,6 +51,7 @@ def parse_html(html):
             "categories": categories,
             "video_id": video_id,
             "time": time,
+            "transcript": "",  # will be pre-filled later
         }
 
     return presentations

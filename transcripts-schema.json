@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "keyPropertyMapping": "title"
+    },
+    "presentation_type": {
+      "type": "string",
+      "indexable": true,
+      "searchable": true
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "keyPropertyMapping": "category"
+      }
+    },
+    "transcript": {
+      "type": "string",
+      "indexable": true,
+      "searchable": true
+    },
+    "video_id": {
+      "type": "string"
+    },
+    "time": {
+      "type": "string"
+    }
+  }
+}
