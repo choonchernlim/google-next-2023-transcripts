@@ -20,11 +20,11 @@
     },
     "transcript": {
       "type": "string",
-      "indexable": true,
-      "searchable": true
+      "keyPropertyMapping": "description"
     },
     "video_id": {
-      "type": "string"
+      "type": "string",
+      "keyPropertyMapping": "uri"
     },
     "time": {
       "type": "string"
